@@ -96,7 +96,7 @@ To run it:
 
 ## Business Report
 
-Reports/Zara_Product_Sales_Intelligence.md
+[Reports/Zara_Product_Sales_Intelligence.md](https://github.com/JoshuaSebastinSantosh/zara-sales-intelligence/blob/554b3995a3b7f7d41239b9d1e733c6f3600aabe4/Reports/Zara_Product_Sales_Intelligence.md)
 
 ## Key Findings
 
