@@ -1,0 +1,242 @@
+CREATE TABLE staging_zara (
+    product_id VARCHAR(30),
+    product_name VARCHAR(200),
+    product_category VARCHAR(50),
+    product_position VARCHAR(50),
+    promotion VARCHAR(10),
+    seasonal VARCHAR(10),
+    price_raw VARCHAR(30),
+    sales_volume VARCHAR(30),
+    description TEXT,
+    scraped_at VARCHAR(40),
+	product_type VARCHAR(40),
+	gender VARCHAR(10)
+);
+select * from staging_zara
+limit 10;
+
+select 
+	count (*) as total,
+	count (product_id) as product_id_total,
+	count (product_name) as product_name_total,
+	count (product_category) as product_category_total,
+	count (product_position) as product_position_total
+from staging_zara;
+
+select product_id, count(*) as occurrences
+from staging_zara
+group by product_id
+having count(*) > 1;
+
+
+
+SELECT DISTINCT product_category
+FROM staging_zara
+ORDER BY 1;
+
+select distinct product_position
+from staging_zara
+order by 1;
+
+select distinct product_position
+from staging_zara
+order by 1;
+
+
+
+
+
+create table zara_products(
+product_id varchar(10) primary key,
+product_name varchar(100),
+product_category varchar(50),
+product_position varchar(50),
+promotion boolean,
+seasonal boolean,
+price_raw numeric(10,2),
+sales_volume int,
+description text,
+scraped_at timestamp,
+product_type VARCHAR(40),
+gender VARCHAR(10)
+);
+insert into zara_products
+select
+	trim(product_id),
+	trim(product_name),
+	trim(product_category),
+	trim(product_position),
+case
+	when lower(trim(promotion)) in ('yes') then TRUE
+	when lower(trim(promotion)) in ('no') then FALSE
+END,
+CASE
+	when lower(trim(seasonal)) in ('yes') then TRUE
+	when lower(trim(seasonal)) in ('no') then FALSE
+END,
+NULLIF(REGEXP_REPLACE(price_raw,'[^0-9.]','','g'),'')::NUMERIC,
+NULLIF(REGEXP_REPLACE(sales_volume,'[^0-9.]','','g'),'')::INT,
+description,
+scraped_at::TIMESTAMP,
+product_type,
+case
+	when lower(trim(gender)) in ('man') then 'M'
+	when lower(trim(gender)) in ('woman') then 'w'
+end
+from staging_zara
+where product_id is not null;
+	
+
+SELECT
+    (SELECT COUNT(*) FROM staging_zara) AS staging_rows,
+    (SELECT COUNT(*) FROM zara_products) AS clean_rows;
+
+SELECT *
+FROM information_schema.columns
+WHERE table_name = 'zara_products'
+ORDER BY ordinal_position;
+
+select distinct section
+from staging_zara
+order by 1;
+SELECT DISTINCT seasonal
+FROM staging_zara
+ORDER BY 1;
+
+
+
+SELECT inet_server_port(), current_database();
+
+select
+	MAX(price_raw:: NUMERIC) AS MAX_PRICE,
+	MIN(price_raw:: NUMERIC) AS MIN_PRICE
+FROM staging_zara;
+
+select
+	MAX(sales_volume:: INT) AS MAX_SALES,
+	MIN(sales_volume:: INT) AS MIN_SALES
+FROM staging_zara;
+
+SELECT
+    column_name,
+    data_type
+FROM information_schema.columns
+WHERE table_name = 'zara_products'
+ORDER BY ordinal_position;
+
+ALTER TABLE zara_products
+ADD COLUMN price_band VARCHAR(20);
+
+UPDATE zara_products
+SET price_band =
+CASE
+    WHEN price_raw < 50 THEN '<50'
+    WHEN price_raw < 100 THEN '50-100'
+    WHEN price_raw < 150 THEN '100-150'
+    WHEN price_raw < 200 THEN '150-200'
+    WHEN price_raw >= 200 THEN '>200'
+END;
+
+
+select product_type,SUM(sales_volume) as total_sales
+from zara_products
+group by product_type
+order by 2 desc;
+
+select product_type, count(*) as product_count,SUM(sales_volume) as total_sales, avg(sales_volume) as avg_sales
+from zara_products
+group by product_type
+order by 2 desc; 
+
+
+select product_position, count(*) as product_count,SUM(sales_volume) as total_sales, avg(sales_volume) as avg_sales
+from zara_products
+group by product_position
+order by avg_sales desc; 
+
+select promotion, count(*) as product_count,SUM(sales_volume) as total_sales, avg(sales_volume) as avg_sales
+from zara_products
+group by promotion
+order by avg_sales desc; 
+
+select product_name ,product_type, count(*) as product_count,SUM(sales_volume) as total_sales, avg(sales_volume) as avg_sales
+from zara_products
+group by product_name
+ORDER BY sales_volume DESC;
+
+select product_name , product_type , sales_volume
+from (select product_name , product_type,sales_volume,rank() over (partition by product_type order by sales_volume desc) as rank_in_type
+from zara_products
+order by product_type, rank_in_type) as rank_by_type
+where rank_in_type = 1;
+
+select product_name , product_type , sales_volume,sales_rank from
+(select product_name , 
+product_type , 
+sales_volume, 
+ROW_NUMBER() over(order by sales_volume desc) as sales_rank, 
+COUNT(*) OVER () AS total_products 
+from zara_products order by sales_volume desc) as ranked_products
+where sales_rank<= CEIL(total_products * 0.10);
+
+WITH ranked AS (
+    SELECT sales_volume,
+    ROW_NUMBER() OVER (ORDER BY sales_volume DESC) AS rn,
+    COUNT(*) OVER () AS n
+    FROM zara_products)
+SELECT
+      ROUND(SUM(sales_volume) FILTER(WHERE RN<= CEIL(N*0.1))*100/ SUM(sales_volume),1 ) AS TENPCTVOLUME
+FROM ranked;
+
+
+WITH RANKED AS(
+	SELECT sales_volume,
+	ROW_NUMBER() OVER (ORDER BY sales_volume DESC) AS RN,
+	COUNT(*) OVER() AS N
+	FROM zara_products)
+SELECT
+	ROUND(SUM(sales_volume) FILTER(WHERE RN<= ceil(N*0.1))*100 / SUM(sales_volume),1) AS  pct_volume_from_top_10pct_products
+FROM RANKED;
+
+
+select product_name ,sales_volume
+from zara_products
+filter where product_type = 'jackets'
+order by sales_volume desc
+limit 1;
+
+
+
+
+
+select price_band,promotion,ROUND(avg(sales_volume)) as avg_sales_volume from zara_products
+group by price_band,promotion
+order by price_band,promotion;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
