@@ -63,7 +63,7 @@ Other issues found during validation:
 6.   Document findings, limitations, and recommendations.
 
 ## Dashboard
-![[Pasted image 20261015181003.png]]
+
 The dashboard shows five headline metrics: 5 product types, 47.62% of products on promotion, 459,573 total sales volume, 252 products, and an average of 1.82K per product. Charts break sales volume down by product type, price band, and product position. A table lists the five highest-volume products. The pie chart filters by product type, while the promotion slicer filters by promotion status.
 
 ## SQL Scripts
@@ -96,7 +96,7 @@ To run it:
 
 ## Business Report
 
-[Link to the final business report.]
+Reports/Zara_Product_Sales_Intelligence.md
 
 ## Key Findings
 
