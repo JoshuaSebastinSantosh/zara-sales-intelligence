@@ -138,6 +138,7 @@ zara/
 ├── README.md  
 ├── data/  
 │   ├── Zara.xlsx  
-│   └── Zara_formatted.csv  
+│   └── Zara_formatted.csv 
+├── Reports/Zara_Product_Sales_Intelligence.md
 ├── sql/zara_sql.sql  
 └── powerbi/ zara.pbix
