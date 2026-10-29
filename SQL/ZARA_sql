@@ -96,7 +96,7 @@ FROM information_schema.columns
 WHERE table_name = 'zara_products'
 ORDER BY ordinal_position;
 
-select distinct section
+select distinct gender 
 from staging_zara
 order by 1;
 SELECT DISTINCT seasonal
